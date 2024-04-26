@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  arnold-api:
+    image: arnold_api
+    container_name: arnold_api
+    restart: unless-stopped
+    build:
+      context: .
+      target: build
+    ports:
+      - ${PORT}:${PORT}
+      - 9229:9229
+    env_file:
+      - .env
+    volumes:
+      - ./:/home/node/app
+      - /home/node/app/node_modules
+    command: node ace serve --watch
+    depends_on:
+      - arnold-mysql
+
+  arnold-mysql:
+    image: arm64v8/mysql
+    container_name: arnold-mysql
+    restart: always
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    expose:
+      - ${DB_PORT}
+    volumes:
+      - ./db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 'arnold'
+      MYSQL_PASSWORD: 'arnold'
+      MYSQL_USER: 'adonis'
+      MYSQL_DATABASE: 'arnold-mysql'
+volumes:
+  db:
